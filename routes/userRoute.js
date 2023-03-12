@@ -99,11 +99,13 @@ userRouter.post('/signin', (req,res)=>{
     User.findOne({email:email.toLowerCase()})
     .then((user)=>{
         if(user){
+            console.log(user)
             bcryptjs.compare(req.body.password, user.password)
             .then((verifieduser)=>{
                 if(verifieduser){
                     const token = jwt.sign({
-                        userId:user.id, 
+                        userId:user._id, 
+                        isAdmin:user.isAdmin,
                         username:user.username
                     },
                     process.env.TOKEN_SECRET,

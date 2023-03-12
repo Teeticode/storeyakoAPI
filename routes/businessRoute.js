@@ -14,7 +14,7 @@ businessRouter.get('/',(req,res)=>{
     Business.find({}).sort({'createdAt':-1})
     .then(businesses=>{
         if(businesses){
-            return res.status(200).json({businesses:businesses})
+            return res.status(200).json({results:businesses})
         }else{
             return res.status(404).json({error:"not found"})
         }
@@ -24,8 +24,33 @@ businessRouter.get('/',(req,res)=>{
     })
 })
 
-businessRouter.get('/:id',verifyUser,(req,res)=>{
-    Business.findById(req.params.id).populate("products")
+businessRouter.get('/products/:id',(req,res)=>{
+    Business.findById({_id:req.params.id})
+    .then(business=>{
+        if(business){
+            Product.find({owner:business.owner})
+            .then((products)=>{
+                console.log({products,business})
+                const prods = new Array()
+                if(products.owner === business.owner){
+                    return res.status(200).json(products)
+                }else{
+                    return res.status(200).json(products)
+                }
+            })
+            
+            
+        }else{
+            return res.status(404).json({error:"not found"})
+        }
+    })
+    .catch(err=>{
+        return res.status(500).json({error:"something went wrong"})
+    })
+})
+
+businessRouter.get('/:id',(req,res)=>{
+    Business.findById({_id:req.params.id})
     .then(business=>{
         console.log(business)
         if(business){
@@ -51,11 +76,10 @@ businessRouter.post('/',verifyUser,(req,res)=>{
     if(!req.body.name||!req.body.description||!req.body.category){
         return res.status(500).json({error:"Fill all fields"})
     }
-    console.log(req)
-    Business.findOne({name:req.body.name})
+    Business.findOne({name:req.body.name, owner:req.user})
     .then((businessname)=>{
         if(businessname){
-            return res.status(500).json({error:"business name is taken"})
+            return res.status(500).json({error:"You already own a store"})
         }else{
             Product.find({owner:req.user})
             .then((products)=>{
@@ -65,7 +89,7 @@ businessRouter.post('/',verifyUser,(req,res)=>{
                         owner:req.user,
                         description:req.body.description,
                         products:products,
-                        image:api+req.body.image,
+                        image:req.body.image,
                         category:req.body.category
                     })
                     business.save()

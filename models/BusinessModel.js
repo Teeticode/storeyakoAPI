@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-
+const User = require('./UserModel')
 const businessSchema = mongoose.Schema({
     name:{
         type:String,
@@ -10,17 +10,14 @@ const businessSchema = mongoose.Schema({
         type:String
     },
     owner:{
-        type:String,
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"User",
         required:true
     },
     description:{
         type:String,
         required:true
     },
-    products:[{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"Product"
-    }],
     category:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"Category"

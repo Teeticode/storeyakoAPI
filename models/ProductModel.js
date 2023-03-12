@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-
+const User = require('./UserModel')
 const productSchema = mongoose.Schema({
     name:{
         type:String,

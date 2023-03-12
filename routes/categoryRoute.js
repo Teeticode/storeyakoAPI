@@ -6,8 +6,8 @@ const categoryRouter = express.Router();
 
 categoryRouter.get('/', (req,res)=>{
     Category.find({})
-    .then((cat)=>{
-        res.status(200).json(cat)
+    .then((categories)=>{
+        res.status(200).json({results:categories})
     })
     .catch((err)=>{
         res.status(500).json({
@@ -29,12 +29,17 @@ categoryRouter.get('/:id', (req,res)=>{
     })
 })
 
-categoryRouter.post('/', (req,res)=>{
+categoryRouter.post('/',verifyUser, (req,res)=>{
+    if(!req.body.name){
+        return res.status(500).json({error:'Fill in Category name'})
+
+    }
+    if(req.isAdmin !== true){
+        return res.status(401).json({error:'Your not Authorized!!!'})
+    }
+    console.log(req.user)
     const category = new Category({
-        name:req.body.name,
-        color:req.body.color,
-        icon:req.body.icon,
-        image:req.body.image
+        name:req.body.name
     });
     category.save()
     .then((newCat)=>{
@@ -75,10 +80,7 @@ categoryRouter.put('/:id', verifyUser, (req,res)=>{
     Category.findByIdAndUpdate(
         req.params.id,
         {
-            name:req.body.name,
-            icon:req.body.icon,
-            color:req.body.color,
-            image:req.body.image
+            name:req.body.name
         },
         {
             new:true

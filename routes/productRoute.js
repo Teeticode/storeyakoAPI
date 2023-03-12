@@ -9,10 +9,10 @@ dotenv.config()
 const productRoute = express.Router();
 const api = process.env.api_image
 productRoute.get("/",(req,res)=>{
-        Product.find({}).sort({'createdAt':-1})
+        Product.find({}).sort({'createdAt':-1}).limit(8)
         .then((products)=>{
             if(products){
-                return res.status(200).json(products)
+                return res.status(200).json({results:products})
             }else{
                 return res.status(404).json({error:'Products not found'})
             }
@@ -51,16 +51,15 @@ productRoute.get('/:id',(req,res)=>{
 )
 
 productRoute.post('/',verifyUser,(req,res)=>{
-    if(!req.body.name || !req.body.description || !req.body.price || !req.file.filename || !req.body.countInStock || !req.body.isDiscount || !req.body.category){
+    if(!req.body.name || !req.body.description || !req.body.price || !req.body.image ){
         return res.status(404).json({
             error:'fill in all fields please',
             success:false
         })
     }
-    if(req.file.mimetype ==='image/jpg' || req.file.mimetype ==='image/jpeg' || req.file.mimetype ==='image/png'){
-        Category.findById(req.body.category).select('name color -_id')
+    
+        Category.findById(req.body.category)
         .then((cat)=>{
-            console.log(req.user)
             if(cat){
                 
                 const category = cat
@@ -81,19 +80,9 @@ productRoute.post('/',verifyUser,(req,res)=>{
                     Business.findOne({owner:req.user})
                     .then((business)=>{
                         if(business){
-                            Business.findByIdAndUpdate(
-                                business._id,
-                                {
-                                    products:createdProd
-                                },
-                                {new:true}
-                            ).then((businessupdate)=>{
-                                return res.status(201).json({message:'product is created'})
-                            }).catch(err=>{
-                                return res.status(500).json({error:"something went wrong"})
-                            })
+                            return res.status(201).json({message:'product is created in store'})
                         }else{
-                            return res.status(500).json({error:"No store is linked"})
+                            return res.status(200).json({error:"No store is linked"})
                         }
                     }).catch(err=>{
                         return res.status(500).json({error:"something went wrong"})
@@ -119,9 +108,7 @@ productRoute.post('/',verifyUser,(req,res)=>{
                 success:false
             })
         })
-    }else{
-        return res.status(500).json({error:'please upload an image file'})
-    }
+    
     
     
     
